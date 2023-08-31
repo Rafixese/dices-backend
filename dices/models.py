@@ -1,12 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
 
 
 class GameModel(models.Model):
-    game_name = models.CharField(max_length=100)
+    game_name = models.CharField(max_length=100, default=f'Game {datetime.now().strftime("%Y-%m-%d %H:%M")}')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='GameModels')
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
+
+    def __str__(self):
+        return f'{self.id}#{self.game_name}'
 
 
 class PlayerModel(models.Model):
@@ -19,10 +23,14 @@ class PlayerModel(models.Model):
     class Meta:
         unique_together = ['player_name', 'created_by']
 
+    def __str__(self):
+        return f'{self.id}#{self.player_name}'
+
 
 class GameColModel(models.Model):
     player_fk = models.ForeignKey(PlayerModel, on_delete=models.PROTECT, related_name='GameColModels')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='GameColModels')
+    game_fk = models.ForeignKey(GameModel, on_delete=models.CASCADE, related_name='GameColModels')
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
     field_1 = models.IntegerField()
@@ -56,3 +64,6 @@ class GameColModel(models.Model):
 
     def get_score(self):
         return self.get_part_score_top_table() + self.get_part_score_bottom_table()
+
+    def __str__(self):
+        return f'{self.id}#{self.game_fk}#{self.player_fk}'
